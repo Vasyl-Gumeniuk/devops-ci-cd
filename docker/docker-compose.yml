@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  django:
+    build:
+      context: ./django
+    container_name: django_app
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./django:/app
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://django_user:pas48159cf@db:5432/django_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:14
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: django_db
+      POSTGRES_USER: django_user
+      POSTGRES_PASSWORD: pas48159cf
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - django
+
+volumes:
+  postgres_data:
